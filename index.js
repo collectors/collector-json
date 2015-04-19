@@ -26,11 +26,6 @@ function Collector(options) {
   // body options
   this.limit = options.limit || '10kb'
 
-  // context options
-  this.headers = options.headers || [
-    'user-agent',
-  ]
-
   // stream
   this.stream = new PassThrough({
     objectMode: true,
@@ -60,7 +55,7 @@ Collector.prototype.call = function (SELF, req, res) {
   const origin = headers.origin
   const stream = this.stream
   const obj = {
-    context: this.createContext(req, res),
+    headers: headers,
     acid: this.getACID(req, res),
     ip: proxyaddr(req, this.trust),
     received_at: new Date(),
@@ -72,7 +67,7 @@ Collector.prototype.call = function (SELF, req, res) {
     case 'POST': break
     case 'OPTIONS':
       if (origin) {
-        const method = req.headers['access-control-request-method']
+        const method = headers['access-control-request-method']
         if (!method || method.trim() !== 'POST') {
           res.statusCode = 405
           res.end()
@@ -129,27 +124,6 @@ Collector.prototype.call = function (SELF, req, res) {
 
 Collector.prototype.pipe = function (dest, opts) {
   return this.stream.pipe(dest, opts)
-}
-
-/**
- * Create a request context object.
- */
-
-Collector.prototype.createContext = function (req) {
-  const context = {}
-  const headers = req.headers
-
-  // context.referrer
-  let referrer = headers.referrer || headers.referer
-  if (referrer) context.referrer = referrer
-
-  // context.date
-  if (headers.date) context.date = new Date(context.date)
-
-  // all other headers
-  for (let key of this.headers) if (headers[key]) context[key] = headers[key]
-
-  return context
 }
 
 /**

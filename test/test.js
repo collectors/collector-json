@@ -85,11 +85,11 @@ describe('JSON Collector', function () {
     })
   })
 
-  it('should pass headers as .context', function (done) {
+  it('should pass headers', function (done) {
     collector.stream.once('data', function (obj) {
       assert.equal(obj.data.event, 'asdf')
-      assert.equal(obj.context['user-agent'], 'useragent')
-      assert.equal(obj.context.referrer, 'https://google.com')
+      assert.equal(obj.headers['user-agent'], 'useragent')
+      assert.equal(obj.headers.referrer || obj.headers.referer, 'https://google.com')
       done()
     })
 
